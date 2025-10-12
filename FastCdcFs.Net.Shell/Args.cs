@@ -39,7 +39,7 @@ public class TrainArgs : BaseArgs
     [Option("max", Required = false, Default = FastCdc.MaximumMax, HelpText = "Max size to end with")]
     public uint Max { get; set; }
 
-    [Option("concurrency", Required = false, HelpText = "The number of concurrent tasks (0 is Environment.ProcessorCount)")]
+    [Option('c', "concurrency", Required = false, HelpText = "The number of concurrent tasks (0 is Environment.ProcessorCount)")]
     public int Concurrency
     {
         get => field > 0 ? field : Environment.ProcessorCount;

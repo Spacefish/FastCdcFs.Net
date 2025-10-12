@@ -166,7 +166,7 @@ internal class TrainHandler(TrainArgs a)
                     avg < (a.Max > FastCdc.AverageMax ? FastCdc.AverageMax : a.Max);
                     avg <<= 1)
                 {
-                    for (var max = avg << 1; max < a.Max; max <<= 1)
+                    for (var max = avg << 1; max <= a.Max; max <<= 1)
                     {
                         var item = new FastCdcWorkItem(min, avg, max);
                         Console.WriteLine($"[{workItems.Count}] {item}");

@@ -32,7 +32,7 @@
     },
     "Train CompressionDictSize": {
       "commandName": "Project",
-      "commandLineArgs": "train compressiondict -d d:\\work\\bcr\\current-dlbs"
+      "commandLineArgs": "train compressiondict -c 1 -d d:\\work\\bcr\\current-dlbs"
     }
   }
 }
