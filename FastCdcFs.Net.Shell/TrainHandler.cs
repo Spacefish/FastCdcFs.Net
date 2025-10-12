@@ -9,7 +9,14 @@ internal class TrainHandler(TrainArgs a)
 {
     private abstract record WorkItem
     {
-        public bool Handled { get; set; }
+        public enum WorkItemStates
+        {
+            Queued = 0,
+            Processing,
+            Done
+        }
+
+        public WorkItemStates State { get; set; }
 
         public uint Length { get; set; }
 
@@ -89,6 +96,7 @@ internal class TrainHandler(TrainArgs a)
 
             item.Duration = sw.Elapsed;
             item.Length = (uint)ms.Length;
+            item.State = WorkItem.WorkItemStates.Done;
 
             PrintCurrentWorkItemRanking();
         }
@@ -98,18 +106,22 @@ internal class TrainHandler(TrainArgs a)
     {
         lock (sync)
         {
-            item = workItems.FirstOrDefault(w => !w.Handled);
+            item = workItems.FirstOrDefault(w => w.State is WorkItem.WorkItemStates.Queued);
             if (item is null)
                 return false;
 
-            item.Handled = true;
+            item.State = WorkItem.WorkItemStates.Processing;
             return true;
         }
     }
 
     private void PrintCurrentWorkItemRanking()
     {
-        var finished = workItems.Where(w => w.Handled).OrderBy(w => w.Length).ToArray();
+        var finished = workItems
+            .Where(w => w.State is WorkItem.WorkItemStates.Done)
+            .OrderBy(w => w.Length)
+            .ToArray();
+
         ConsoleGrid grid;
 
         if (a.Mode is TrainArgs.TrainModes.FastCdc)
