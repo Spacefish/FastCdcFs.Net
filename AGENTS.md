@@ -9,6 +9,7 @@ FastCdcFS.Net is a .NET library for creating read-only file systems backed by fa
 - `FastCdcFs.Net/` - Core library implementing the file system
 - `FastCdcFs.Net.Shell/` - Command-line tool for working with file systems
 - `FastCdcFs.Net.Client/` - WPF GUI client (Windows-only)
+- `Benchmark/` - Performance benchmarking tool
 - `Tests/` - Unit tests using xUnit
 - `Test/` - Additional test project
 
@@ -42,6 +43,25 @@ dotnet test
 # Run tests for specific project
 dotnet test Tests/Tests.csproj
 ```
+
+## Running Benchmarks
+
+The `Benchmark` project demonstrates the deduplication and compression capabilities of the FastCDC chunking algorithm:
+
+```bash
+# Run the benchmark
+dotnet run --project Benchmark
+```
+
+The benchmark:
+- Generates test data with intentional duplication patterns:
+  - Binary files: 20 files with 4MB of shared data and 1MB unique data each
+  - Text files: 100 HTML files with similar structure and embedded SVG content
+- Builds FastCdcFS archives from the test data
+- Measures and reports compression ratios showing the effectiveness of content-defined chunking and deduplication
+- Outputs original size, archive size, and compression ratio for each dataset
+
+This is useful for understanding how FastCdcFS performs with different types of data and validating that deduplication is working correctly.
 
 ## Packaging
 
