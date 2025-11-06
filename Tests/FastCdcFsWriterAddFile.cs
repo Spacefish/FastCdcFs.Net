@@ -1,4 +1,4 @@
-﻿using FastCdcFs.Net;
+using FastCdcFs.Net;
 
 namespace Tests;
 
@@ -11,7 +11,7 @@ public class FastCdcFsWriterAddFile : TestBase
     public void SameFileTwiceThrowsException(string targetPath)
     {
         var writer = new FastCdcFsWriter(FastCdcFsOptions.Default);
-        writer.AddFile([], targetPath);
-        Assert.Throws<FastCdcFsFileAlreadyExistsException>(() => writer.AddFile([], targetPath));
+        writer.AddFile((byte[])[], targetPath);
+        Assert.Throws<FastCdcFsFileAlreadyExistsException>(() => writer.AddFile((byte[])[], targetPath));
     }
 }
