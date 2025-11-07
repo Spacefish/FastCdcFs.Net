@@ -39,6 +39,8 @@ public class FastCdcFsWriter(FastCdcFsOptions options, ILogger? logger = null)
     private readonly List<FileInfo> files = [];
     private readonly List<ChunkInfo> chunks = [];
     private readonly DirectoryInfo root = new(0, 0, "");
+    private readonly List<(FileInfo file, byte[] data)> _solidCandidates = [];
+    private long _solidCandidatesTotalSize = 0;
 
     private uint nextFileId = 0, nextDirectoryId = 1, nextChunkId = 0;
 
@@ -75,14 +77,27 @@ public class FastCdcFsWriter(FastCdcFsOptions options, ILogger? logger = null)
 
         if (data.Length > 0)
         {
-            var cdc = new FastCdc(data, options.FastCdcMinSize, options.FastCdcAverageSize, options.FastCdcMaxSize);
-
-            using var ms = new MemoryStream(data);
-
-            foreach (var chunk in cdc.GetChunks())
+            if (options.SolidBlockSize > 0 && data.Length < options.SolidBlockSize)
             {
-                var chunkInfo = GetOrCreateChunk(chunk, ms);
-                file.ChunkIds.Add(chunkInfo.Id);
+                _solidCandidates.Add((file, data));
+                _solidCandidatesTotalSize += data.Length;
+
+                if (_solidCandidatesTotalSize >= options.FastCdcAverageSize)
+                {
+                    ProcessSolidCandidateBatch();
+                }
+            }
+            else
+            {
+                ProcessSolidCandidateBatch();
+
+                var cdc = new FastCdc(data, options.FastCdcMinSize, options.FastCdcAverageSize, options.FastCdcMaxSize);
+                using var ms = new MemoryStream(data);
+                foreach (var chunk in cdc.GetChunks())
+                {
+                    var chunkInfo = GetOrCreateChunk(chunk, ms);
+                    file.ChunkIds.Add(chunkInfo.Id);
+                }
             }
         }
 
@@ -98,6 +113,8 @@ public class FastCdcFsWriter(FastCdcFsOptions options, ILogger? logger = null)
 
     public void Build(Stream s)
     {
+        ProcessSolidCandidateBatch();
+
         var pos = s.Position;
 
         using var bw = new BinaryWriter(s, Encoding.UTF8, true);
@@ -232,10 +249,16 @@ public class FastCdcFsWriter(FastCdcFsOptions options, ILogger? logger = null)
         {
             try
             {
+                var dictTrainChunks = chunks
+                    .OrderByDescending(c => c.Data.Length)
+                    .Take(Math.Max(10, Math.Min(100, chunks.Count / 10)))
+                    .Select(c => c.Data)
+                    .ToList();
+
                 return DictBuilder.TrainFromBuffer(
-                    chunks.Select(c => c.Data),
-                    options.CompressionDictSize is 0
-                        ? (int)(100 * chunks.Average(c => c.Data.Length))
+                    dictTrainChunks,
+                    options.CompressionDictSize == 0
+                        ? (int)(100 * dictTrainChunks.Average(d => d.Length))
                         : (int)options.CompressionDictSize);
             }
             catch
@@ -355,5 +378,41 @@ public class FastCdcFsWriter(FastCdcFsOptions options, ILogger? logger = null)
         }
 
         return mode;
+    }
+
+    private void ProcessSolidCandidateBatch()
+    {
+        if (_solidCandidates.Count == 0)
+            return;
+
+        using var ms = new MemoryStream();
+        foreach (var (_, data) in _solidCandidates)
+        {
+            ms.Write(data);
+        }
+        var combinedData = ms.ToArray();
+        ms.Position = 0;
+
+        var cdc = new FastCdc(combinedData, options.FastCdcMinSize, options.FastCdcAverageSize, options.FastCdcMaxSize);
+        var combinedChunks = cdc.GetChunks().ToList();
+
+        var currentOffset = 0;
+        var chunkIndex = 0;
+
+        foreach (var (file, data) in _solidCandidates)
+        {
+            var fileEndOffset = currentOffset + data.Length;
+            while (chunkIndex < combinedChunks.Count && combinedChunks[chunkIndex].Offset < fileEndOffset)
+            {
+                var chunk = combinedChunks[chunkIndex];
+                var chunkInfo = GetOrCreateChunk(chunk, ms);
+                file.ChunkIds.Add(chunkInfo.Id);
+                chunkIndex++;
+            }
+            currentOffset = fileEndOffset;
+        }
+
+        _solidCandidates.Clear();
+        _solidCandidatesTotalSize = 0;
     }
 }

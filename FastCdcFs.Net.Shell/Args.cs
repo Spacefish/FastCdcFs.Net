@@ -112,6 +112,9 @@ public class BuildArgs : BaseArgs
 
     [Option("fastcdc-max", Required = false, Default = FastCdcFsOptions.DefaultFastCdcMaxSize, HelpText = "Maximum chunk size for FastCDC algorithm")]
     public uint FastCdcMax { get; set; }
+
+    [Option("solid-block-size", Required = false, Default = 0u, HelpText = "Concatenate files smaller than this size into solid blocks to improve compression of small files.")]
+    public uint SolidBlockSize { get; set; }
 }
 
 [Verb("list")]
