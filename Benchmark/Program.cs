@@ -35,7 +35,8 @@ namespace Benchmark
             try
             {
                 var writer = new FastCdcFsWriter(o => o
-                    .WithChunkSizes(1024, 32 * 1024, 128 * 1024));
+                    .WithChunkSizes(4 * 1024, 32 * 1024, 128 * 1024)
+                    .WithSolidBlockSize(4 * 1024));
                 writer.AddDirectory(directoryPath);
                 writer.Build(archivePath);
 

@@ -140,5 +140,6 @@ internal class Handler
             a.NoZstd,
             a.NoHash,
             a.CompressionLevel,
-            a.CompressionDictSize);
+            a.CompressionDictSize,
+            a.SolidBlockSize);
 }
