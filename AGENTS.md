@@ -27,23 +27,19 @@ The project requires .NET 10 SDK (RC2 or newer) to build the net10.0 target fram
 
 ### Method 1: Using the dotnet-install script (Recommended)
 
-A `dotnet-install.sh` script is included in the repository for convenience:
+Download and run the official dotnet-install script from Microsoft:
 
 ```bash
-# On Linux/macOS
+# Download the script
+wget https://dot.net/v1/dotnet-install.sh
 chmod +x dotnet-install.sh
+
+# Install to system directory (requires sudo)
 sudo ./dotnet-install.sh --channel 10.0 --install-dir /usr/share/dotnet
 
-# For local user installation (no sudo required)
+# Or install to local user directory (no sudo required)
 ./dotnet-install.sh --channel 10.0 --install-dir ~/.dotnet
 export PATH="$HOME/.dotnet:$PATH"
-```
-
-On Windows, use PowerShell:
-```powershell
-# Download and run the Windows install script
-Invoke-WebRequest -Uri https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
-./dotnet-install.ps1 -Channel 10.0 -InstallDir $env:ProgramFiles\dotnet
 ```
 
 ### Method 2: Using Package Managers
@@ -63,11 +59,6 @@ sudo apt install dotnet-sdk-10.0
 **macOS (using Homebrew):**
 ```bash
 brew install --cask dotnet-sdk@10
-```
-
-**Windows (using winget):**
-```powershell
-winget install Microsoft.DotNet.SDK.10
 ```
 
 ### Method 3: Manual Download
