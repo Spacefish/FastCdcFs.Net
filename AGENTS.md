@@ -21,6 +21,78 @@ FastCdcFS.Net is a .NET library for creating read-only file systems backed by fa
 
 **Note**: The `FastCdcFs.Net.Client` project is a Windows-only WPF GUI client. Agents typically do not need to build or work on this project, and it can be safely ignored on non-Windows platforms.
 
+## Installing .NET 10 SDK
+
+The project requires .NET 10 SDK (RC2 or newer) to build the net10.0 target framework. Here are several methods to install it:
+
+### Method 1: Using the dotnet-install script (Recommended)
+
+A `dotnet-install.sh` script is included in the repository for convenience:
+
+```bash
+# On Linux/macOS
+chmod +x dotnet-install.sh
+sudo ./dotnet-install.sh --channel 10.0 --install-dir /usr/share/dotnet
+
+# For local user installation (no sudo required)
+./dotnet-install.sh --channel 10.0 --install-dir ~/.dotnet
+export PATH="$HOME/.dotnet:$PATH"
+```
+
+On Windows, use PowerShell:
+```powershell
+# Download and run the Windows install script
+Invoke-WebRequest -Uri https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
+./dotnet-install.ps1 -Channel 10.0 -InstallDir $env:ProgramFiles\dotnet
+```
+
+### Method 2: Using Package Managers
+
+**Ubuntu/Debian:**
+```bash
+# Add Microsoft package repository (if not already added)
+wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+
+# Install .NET 10 SDK (when available in stable repos)
+sudo apt update
+sudo apt install dotnet-sdk-10.0
+```
+
+**macOS (using Homebrew):**
+```bash
+brew install --cask dotnet-sdk@10
+```
+
+**Windows (using winget):**
+```powershell
+winget install Microsoft.DotNet.SDK.10
+```
+
+### Method 3: Manual Download
+
+Download the .NET 10 SDK directly from Microsoft:
+- Visit: https://dotnet.microsoft.com/download/dotnet/10.0
+- Download the appropriate installer for your operating system
+- Run the installer and follow the prompts
+
+### Verifying Installation
+
+After installation, verify that .NET 10 SDK is available:
+
+```bash
+dotnet --list-sdks
+```
+
+You should see version `10.0.x` in the list. Then verify the project builds:
+
+```bash
+dotnet build FastCdcFs.Net -c Release
+```
+
+Both `net8.0` and `net10.0` target frameworks should build successfully.
+
 ## Building the Project
 
 ```bash
